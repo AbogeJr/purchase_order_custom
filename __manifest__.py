@@ -4,15 +4,15 @@
     "summary": """
         Adds xlsx report to Purchase Orders
         """,
-    "author": "Tritel Technologies Ltd",
-    "website": "http://www.tritel.co.ke",
-    "version": "8.0.1.0.0",
+    "author": "Auraska Infotech",
+    "website": "https://auraska.ke",
+    "version": "8.0.1.0.1",
     "category": "Purchases",
     "license": "AGPL-3",
     "depends": [
+        "report_xlsx",
         "product",
         "purchase",
-        "report_xlsx",
     ],
     "data": [
         "report/purchase_order.xml",

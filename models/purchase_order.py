@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from odoo import api, fields, models, exceptions
+from odoo import api, fields, models, tools
+import json
 
 
 class PurchaseOrder(models.Model):
@@ -23,12 +24,11 @@ class PurchaseOrder(models.Model):
     currency_factor = fields.Float(string="Currency Rate", default=1)
 
     def print_xlsx_report(self):
-        print("\n\nHello\n\n")
         datas = {"ids": self.ids, "model": "purchase.order", "form": self.read()[0]}
 
         return {
             "type": "ir.actions.report",
-            "report_name": "purchase.order.xlsx",
+            "report_name": "purchase_order_xlsx",
             "datas": datas,
             "name": "Purchase Order",
         }
@@ -103,7 +103,7 @@ class PurchaseOrder(models.Model):
     def update_supplier_pricelist(self):
         for product in self.order_line:
             supplier_pricelist = product.product_id.seller_ids.filtered(
-                lambda x: x.name.id == self.partner_id.id
+                lambda x: x.id == self.partner_id.id
             )
             if len(supplier_pricelist) > 0:
                 for pricelist in supplier_pricelist:

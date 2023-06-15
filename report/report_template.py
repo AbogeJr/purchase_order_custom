@@ -18,12 +18,12 @@ class PartnerXlsx(models.AbstractModel):
         )
 
         sheet.merge_range("B1:E1", "Purchase Order: %s" % po.name, header)
-        sheet.merge_range("A2:B2", "Supplier:", bold)
-        sheet.merge_range("C2:D2", po.partner_id.name, normal)
-        sheet.merge_range("A3:B3", "Order Date:", bold)
-        sheet.merge_range("C3:D3", po.date_order, normal)
-        sheet.merge_range("A4:B4", "Currency:", bold)
-        sheet.merge_range("C4:D4", po.currency_id.name, normal)
+        sheet.merge_range("B2:C2", "Supplier:", bold)
+        sheet.merge_range("D2:E2", po.partner_id.name, normal)
+        sheet.merge_range("B3:C3", "Order Date:", bold)
+        sheet.merge_range("D3:E3", po.date_order.date(), normal)
+        sheet.merge_range("B4:C4", "Currency:", bold)
+        sheet.merge_range("D4:E4", po.currency_id.name, normal)
 
         # Adjust height: top row
         sheet.set_row(0, 20)
@@ -46,7 +46,7 @@ class PartnerXlsx(models.AbstractModel):
         sheet.write(row, 5, "Product Description", bold)
         sheet.write(row, 6, "Qty", bold)
         sheet.write(row, 7, "FoB", bold)
-        sheet.write(row, 8, "Unit", bold)
+        sheet.write(row, 8, "Units", bold)
         sheet.write(row, 9, "Measurements", bold)
         sheet.write(row, 10, "Sub-total", bold)
 
@@ -64,8 +64,8 @@ class PartnerXlsx(models.AbstractModel):
             sheet.write(row, 0, index, normal)
             sheet.write(row, 1, line.product_id.sequence, normal)
             sheet.write(row, 2, line.product_id.id or "", normal)
-            sheet.write(row, 3, supplier_code or "", normal)
-            sheet.write(row, 4, product_code or "", normal)
+            sheet.write(row, 3, supplier_code or "N\A", normal)
+            sheet.write(row, 4, product_code or "N\A", normal)
             sheet.write(row, 5, line.product_id.name, normal)
             sheet.write(row, 6, line.product_qty, normal)
             sheet.write(row, 7, line.price_unit, currency)
