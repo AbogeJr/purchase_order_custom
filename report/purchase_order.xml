@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<odoo>
+    <!-- <report
+        id="purchase_order_xlsx"
+        model="purchase.order"
+        string="Purchase Order Excel"
+        report_type="xlsx"
+        name="purchase_order_autolamps.report_xlsx"
+        file="purchase_order_autolamps.report_xlsx"
+        attachment_use="False"
+    /> -->
+    <report
+    id="purchase_orer_xlsx"
+    model="purchase.order"
+    string="Print to XLSX"
+    report_type="xlsx"
+    name="purchase_order_autolamps.purchase_order_xlsx"
+    file="purchase_order"
+    attachment_use="False"
+/>
+</odoo>
