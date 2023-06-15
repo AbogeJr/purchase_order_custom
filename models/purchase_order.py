@@ -23,6 +23,7 @@ class PurchaseOrder(models.Model):
     currency_factor = fields.Float(string="Currency Rate", default=1)
 
     def print_xlsx_report(self):
+        print("\n\nHello\n\n")
         datas = {"ids": self.ids, "model": "purchase.order", "form": self.read()[0]}
 
         return {
