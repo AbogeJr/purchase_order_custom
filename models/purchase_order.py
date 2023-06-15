@@ -39,7 +39,7 @@ class PurchaseOrder(models.Model):
         for record in self:
             for line in record.order_line:
                 val = {}
-                val["product_id"] = line.product_id
+                val["product_id"] = line.product_id.id
                 val["old_cost"] = line.product_id.standard_price
                 landed_cost = (
                     self.landed_cost_factor
