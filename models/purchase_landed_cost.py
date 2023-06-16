@@ -10,3 +10,4 @@ class PurchaseLandedCost(models.Model):
     quantity = fields.Integer()
     price = fields.Float()
     taxes = fields.Many2many("account.tax")
+    purchase_id = fields.Many2one("purchase.order")

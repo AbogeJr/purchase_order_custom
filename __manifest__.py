@@ -17,6 +17,7 @@
     "data": [
         "report/purchase_order.xml",
         "views/purchase_order.xml",
+        "views/purchase_landed_cost.xml",
         "views/product.xml",
         "security/ir.model.access.csv",
     ],

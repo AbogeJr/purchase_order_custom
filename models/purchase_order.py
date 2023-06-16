@@ -22,6 +22,7 @@ class PurchaseOrder(models.Model):
     cost_base_amount = fields.Float(compute="_compute_cost_items_totals")
     cost_base_amount_lcy = fields.Float(compute="_compute_cost_items_totals")
     currency_factor = fields.Float(string="Currency Rate", default=1)
+    landed_costs = fields.One2many("purchase.landed.cost", "purchase_id")
 
     def print_xlsx_report(self):
         datas = {"ids": self.ids, "model": "purchase.order", "form": self.read()[0]}
