@@ -17,7 +17,7 @@ class PartnerXlsx(models.AbstractModel):
             {"font_size": 10, "num_format": "#,##0.00", "bold": True}
         )
 
-        sheet.merge_range("B1:E1", "Purchase Order: %s" % po.name, header)
+        sheet.merge_range("B1:K1", "Purchase Order: %s" % po.name, header)
         sheet.merge_range("B2:C2", "Supplier:", bold)
         sheet.merge_range("D2:E2", po.partner_id.name, normal)
         sheet.merge_range("B3:C3", "Order Date:", bold)

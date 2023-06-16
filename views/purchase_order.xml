@@ -10,16 +10,16 @@
 
             <notebook position="inside">
                 <page string="Costing" groups="purchase.group_purchase_manager">
-                    <group >
+                    <group>
                         <group string="Costing">
                             <div colspan="2">
-                            <field name='cost_item_ids' string="">
-                                <tree editable='bottom'>
-                                    <field name='costing_item_id'/>
-                                    <field name='amount'/>
-                                </tree>
-                            </field>
-                        </div>
+                                <field name='cost_item_ids' string="">
+                                    <tree editable='bottom'>
+                                        <field name='costing_item_id'/>
+                                        <field name='amount'/>
+                                    </tree>
+                                </field>
+                            </div>
                         </group>
                         <group class="oe_subtotal_footer oe_right" string="Totals" name="cost_items_total">
                             <field name="cost_items_amount_total"
@@ -35,42 +35,36 @@
                                 options="{'currency_field': 'currency_id'}"/>
                             <field name="cost_base_amount_lcy"
                                 string="Total on PO (LCY)"/>
-                            <div>
-                                <button name="btn_compute_landed_cost_factor" string="(update)" class="oe_link oe_edit_only" type="object" help="Recompute Landed Cost Factor"/>
-                            </div>
-                        </group>
-                    </group>
-                    <!-- <div> -->
-                        <group>
-                            <field name="landed_cost_factor"/>
+                                <field name="landed_cost_factor"/>
                             <field name="base_pricing_factor"/>
                             <field name="pricing_preference"/>
+                            <div><button name="btn_compute_landed_cost_factor" string="(update)" class="oe_link oe_edit_only" type="object" help="Recompute Landed Cost Factor"/> </div>
                         </group>
-                        <div>
+                        <div class="oe_right">
                             <button string="Compute Costing" name="compute_costing_lines" type="object"/>
                             <button string="Adjust Costing" name="adjust_costing" type="object"/>
                             <button string="Revert Costing" name="revert_costing" type="object"/>
                             <button string="Update Supplier Prices" name="update_supplier_pricelist" type="object"/>
                         </div>
-                    <!-- </div> -->
-                    
-                    <div>
-                        <field name="costing_ids" string="">
-                            <tree editable="bottom">
-                                <field name="product_id"/>
-                                <field name="old_cost"/>
-                                <field name="new_cost"/>
-                                <field name="cost_difference"/>
-                                <field name="old_price"/>
-                                <field name='computed_price'/>
-                                <field name="new_price"/>
-                                <field name="price_difference"/>
-                                <field name="old_margin"/>
-                                <field name="new_margin"/>
-                            </tree>
-                        </field>
-                    </div>
-                   
+                    </group>
+                    <group string="costs table">
+                        <div colspan="2">
+                            <field name="costing_ids" string="">
+                                <tree editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="old_cost"/>
+                                    <field name="new_cost"/>
+                                    <field name="cost_difference"/>
+                                    <field name="old_price"/>
+                                    <field name='computed_price'/>
+                                    <field name="new_price"/>
+                                    <field name="price_difference"/>
+                                    <field name="old_margin"/>
+                                    <field name="new_margin"/>
+                                </tree>
+                            </field>
+                        </div>
+                    </group>
                 </page>
             </notebook>
         </field>

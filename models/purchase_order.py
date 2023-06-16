@@ -34,6 +34,7 @@ class PurchaseOrder(models.Model):
         }
 
     def compute_costing_lines(self):
+        print("\n\nCompute Coting\n\n")
         self.costing_ids.unlink()
         lines = []
         for record in self:
@@ -89,18 +90,21 @@ class PurchaseOrder(models.Model):
         self.costing_ids = lines
 
     def adjust_costing(self):
+        print("\n\nAdjust Costing\n\n")
         for record in self:
             for line in record.costing_ids:
                 line.product_id.lst_price = line.new_price
                 line.product_id.standard_price = line.new_cost
 
     def revert_costing(self):
+        print("\n\nRevert Costing\n\n")
         for record in self:
             for line in record.costing_ids:
                 line.product_id.lst_price = line.old_price
                 line.product_id.standard_price = line.old_cost
 
     def update_supplier_pricelist(self):
+        print("\n\nUpdate Supplier Pricelist\n\n")
         for product in self.order_line:
             supplier_pricelist = product.product_id.seller_ids.filtered(
                 lambda x: x.id == self.partner_id.id
@@ -113,6 +117,7 @@ class PurchaseOrder(models.Model):
 
     @api.depends("amount_total", "cost_item_ids.amount", "currency_factor")
     def _compute_cost_items_totals(self):
+        print("\n\nCompute Cost Items Totals\n\n")
         for order in self:
             order.cost_items_amount_total = sum(
                 cost_item.amount for cost_item in order.cost_item_ids
@@ -125,6 +130,7 @@ class PurchaseOrder(models.Model):
             )
 
     def btn_compute_landed_cost_factor(self):
+        print("\n\nCompute Landed Cost Factor\n\n")
         self.ensure_one()
         self.landed_cost_factor = (
             1 + self.cost_items_amount_total / self.cost_base_amount_lcy
@@ -148,6 +154,7 @@ class PurchaseCosting(models.Model):
 
     @api.onchange("new_price")
     def _recompute_price_and_margin(self):
+        print("\n\nRecompute Price and Margin\n\n")
         self.new_margin = self.new_price - self.new_cost
         self.price_difference = self.new_price - self.old_price
 
