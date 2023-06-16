@@ -1,4 +1,5 @@
 from odoo import models
+import datetime
 
 
 class PartnerXlsx(models.AbstractModel):
@@ -69,7 +70,7 @@ class PartnerXlsx(models.AbstractModel):
             sheet.write(row, 5, line.product_id.name, normal)
             sheet.write(row, 6, line.product_qty, normal)
             sheet.write(row, 7, line.price_unit, currency)
-            sheet.write(row, 8, line.product_uom.name, normal)
+            sheet.write(row, 8, line.product_uom_qty, normal)
             sheet.write(row, 9, line.product_uom.name or "", normal)
             sheet.write(row, 10, line.price_subtotal, currency)
 
