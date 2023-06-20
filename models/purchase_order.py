@@ -42,6 +42,7 @@ class PurchaseOrder(models.Model):
                 {
                     "start_date": self.date_order.date(),
                     "end_date": self.date_order.date(),
+                    "id": self.id,
                 },
                 default=date_utils.json_default,
             ),
@@ -60,21 +61,11 @@ class PurchaseOrder(models.Model):
         }
 
     def get_xlsx_report(self, data, response):
-        for record in self:
-            print("\n\nGet XLSX Report\n\n")
-            print(record)
-            print("\n\nGet XLSX Report\n\n")
         # model = data["model("("]
         print("===========DATA===========")
         print(data)
         print("===========DATA===========")
-        print("===========SELF===========")
-        print(self.id)
-        print("===========SELF===========")
-        print("===========RESPONSE===========")
-        print(response)
-        print("===========RESPONSE===========")
-        # po = self.env["purchase.order"].search([("id", "=", self.id)])
+        po = self.env["purchase.order"].search([("id", "=", data["id"])])
 
         from_date = data["start_date"]
         to_date = data["end_date"]
@@ -91,13 +82,13 @@ class PurchaseOrder(models.Model):
             {"font_size": 10, "num_format": "#,##0.00", "bold": True}
         )
 
-        sheet.merge_range("B1:K1", "Purchase Order: %s" % self.name, header)
+        sheet.merge_range("B1:K1", "Purchase Order: %s" % po.name, header)
         sheet.merge_range("B2:C2", "Supplier:", bold)
-        sheet.merge_range("D2:E2", self.partner_id.name, normal)
+        sheet.merge_range("D2:E2", po.partner_id.name, normal)
         sheet.merge_range("B3:C3", "Order Date:", bold)
-        sheet.merge_range("D3:E3", self.date_order, normal)
+        sheet.merge_range("D3:E3", po.date_order, normal)
         sheet.merge_range("B4:C4", "Currency:", bold)
-        sheet.merge_range("D4:E4", self.currency_id.name, normal)
+        sheet.merge_range("D4:E4", po.currency_id.name, normal)
 
         # Adjust height: top row
         sheet.set_row(0, 20)
@@ -127,11 +118,11 @@ class PurchaseOrder(models.Model):
         # Table data
         index = 1
         row += 1
-        for line in self.order_line:
+        for line in po.order_line:
             product_code = line.product_id.default_code
             supplier_code = ""
             supplier = line.product_id.seller_ids.filtered(
-                lambda s: s.partner_id.id == self.partner_id.id
+                lambda s: s.partner_id.id == po.partner_id.id
             )
             if supplier:
                 supplier_code = supplier[0].product_code
@@ -153,10 +144,10 @@ class PurchaseOrder(models.Model):
         # write sub-totals
         row += 1
         sheet.write(row, 9, "Taxes:", bold)
-        sheet.write(row, 10, self.amount_tax, currency_bold)
+        sheet.write(row, 10, po.amount_tax, currency_bold)
         row += 1
         sheet.write(row, 9, "Totals:", bold)
-        sheet.write(row, 10, self.amount_total, currency_bold)
+        sheet.write(row, 10, po.amount_total, currency_bold)
         workbook.close()
         output.seek(0)
         response.stream.write(output.read())
