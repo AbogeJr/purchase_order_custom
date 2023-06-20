@@ -15,6 +15,7 @@ registry.category("ir.actions.report handlers").add("xlsx", async (action) => {
       success: () => {
         console.log("\n\nSuccess!!");
         def.resolve.bind(def);
+        framework.unblockUI();
       },
       error: (error) => {
         console.log("\n\nError\n\n", error);
