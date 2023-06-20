@@ -23,7 +23,6 @@ class ExcelWizard(models.TransientModel):
     )
 
     def print_xlsx(self):
-        print("\n\n Print XLSX \n\n")
         if self.start_date > self.end_date:
             raise ValidationError("Start Date must be less than End Date")
         data = {
