@@ -40,8 +40,6 @@ class PurchaseOrder(models.Model):
             "model": "purchase.order",
             "options": json.dumps(
                 {
-                    "start_date": self.date_order.date(),
-                    "end_date": self.date_order.date(),
                     "id": self.id,
                 },
                 default=date_utils.json_default,
@@ -63,8 +61,6 @@ class PurchaseOrder(models.Model):
     def get_xlsx_report(self, data, response):
         po = self.env["purchase.order"].search([("id", "=", data["id"])])
 
-        from_date = data["start_date"]
-        to_date = data["end_date"]
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output, {"in_memory": True})
         sheet = workbook.add_worksheet()

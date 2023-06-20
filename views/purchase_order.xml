@@ -5,7 +5,6 @@
         <field name="inherit_id" ref="purchase.purchase_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//header/button[last()]" position='after'>
-                <!-- <button name="%(purchase_order_autolamps.action_xlsx_repoort)d" class="oe_highlight" string="Print to Excel" type="action"/> -->
                 <button name="print_xlsx_report" class="oe_highlight" string="Print to Excel" type="object"/>
             </xpath>
 

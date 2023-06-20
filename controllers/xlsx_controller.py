@@ -11,7 +11,7 @@ class XLSXReportController(http.Controller):
         uid = request.session.uid
         report_obj = request.env[model].with_user(uid)
         options = json.loads(options)
-        # options["report_object"] = report_obj
+
         token = "dummy-because-api-expects-one"
         try:
             if output_format == "xlsx":
