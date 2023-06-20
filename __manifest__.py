@@ -10,17 +10,22 @@
     "category": "Purchases",
     "license": "AGPL-3",
     "depends": [
-        "report_xlsx",
+        "web",
         "product",
         "purchase",
     ],
     "data": [
-        "report/purchase_order.xml",
+        "wizard/report_view.xml",
         "views/purchase_order.xml",
         "views/purchase_landed_cost.xml",
         "views/product.xml",
         "security/ir.model.access.csv",
     ],
+    "assets": {
+        "web.assets_backend": [
+            "purchase_order_autolamps/static/src/js/action_manager.js",
+        ]
+    },
     "installable": True,
     "application": True,
     "auto_install": True,

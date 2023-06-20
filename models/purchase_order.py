@@ -1,7 +1,17 @@
 # -*- coding: utf-8 -*-
-
-from odoo import api, fields, models, tools
+import time
+import datetime
+from dateutil.relativedelta import relativedelta
+from odoo import fields, models, api, _
+from odoo.tools import float_is_zero
+from odoo.tools import date_utils
+import io
 import json
+
+try:
+    from odoo.tools.misc import xlsxwriter
+except ImportError:
+    import xlsxwriter
 
 
 class PurchaseOrder(models.Model):
@@ -24,15 +34,26 @@ class PurchaseOrder(models.Model):
     currency_factor = fields.Float(string="Currency Rate", default=1)
     landed_costs = fields.One2many("purchase.landed.cost", "purchase_id")
 
-    def print_xlsx_report(self):
-        datas = {"ids": self.ids, "model": "purchase.order", "form": self.read()[0]}
-
-        return {
-            "type": "ir.actions.report",
-            "report_name": "purchase_order_xlsx",
-            "datas": datas,
-            "name": "Purchase Order",
-        }
+    def get_xlsx_report(self, data, response):
+        from_date = data["start_date"]
+        to_date = data["end_date"]
+        output = io.BytesIO()
+        workbook = xlsxwriter.Workbook(output, {"in_memory": True})
+        sheet = workbook.add_worksheet()
+        cell_format = workbook.add_format({"font_size": "12px", "align": "center"})
+        head = workbook.add_format(
+            {"align": "center", "bold": True, "font_size": "20px"}
+        )
+        txt = workbook.add_format({"font_size": "10px", "align": "center"})
+        sheet.merge_range("B2:I3", "EXCEL REPORT", head)
+        sheet.merge_range("A6:B6", "From Date:", cell_format)
+        sheet.merge_range("C6:D6", from_date, txt)
+        sheet.write("F6", "To Date:", cell_format)
+        sheet.merge_range("G6:H6", to_date, txt)
+        workbook.close()
+        output.seek(0)
+        response.stream.write(output.read())
+        output.close()
 
     def compute_costing_lines(self):
         print("\n\nCompute Coting\n\n")

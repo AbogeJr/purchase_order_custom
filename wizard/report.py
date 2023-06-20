@@ -1,12 +1,69 @@
-# from odoo import models
-# import datetime
+import time
+import datetime
+from dateutil.relativedelta import relativedelta
+from odoo import fields, models, api, _
+from odoo.tools import float_is_zero
+from odoo.tools import date_utils
+import io
+import json
+
+try:
+    from odoo.tools.misc import xlsxwriter
+except ImportError:
+    import xlsxwriter
 
 
-# class PartnerXlsx(models.AbstractModel):
-#     _name = "report.purchase_order_autolamps.purchase_order_xlsx"
-#     _inherit = "report.report_xlsx.abstract"
+class ExcelWizard(models.TransientModel):
+    _name = "purchase.xlsx.wizard"
+    start_date = fields.Datetime(
+        string="Start Date", default=time.strftime("%Y-%m-01"), required=True
+    )
+    end_date = fields.Datetime(
+        string="End Date", default=datetime.datetime.now(), required=True
+    )
 
-#     def generate_xlsx_report(self, workbook, data, po):
+    def print_xlsx(self):
+        print("\n\n Print XLSX \n\n")
+        if self.start_date > self.end_date:
+            raise ValidationError("Start Date must be less than End Date")
+        data = {
+            "start_date": self.start_date,
+            "end_date": self.end_date,
+        }
+        return {
+            "type": "ir.actions.report",
+            "data": {
+                "model": "purchase.order",
+                "options": json.dumps(data, default=date_utils.json_default),
+                "output_format": "xlsx",
+                "report_name": "Excel Report",
+            },
+            "report_type": "xlsx",
+        }
+
+    # def get_xlsx_report(self, data, response):
+    #     from_date = data["start_date"]
+    #     to_date = data["end_date"]
+    #     output = io.BytesIO()
+    #     workbook = xlsxwriter.Workbook(output, {"in_memory": True})
+    #     sheet = workbook.add_worksheet()
+    #     cell_format = workbook.add_format({"font_size": "12px", "align": "center"})
+    #     head = workbook.add_format(
+    #         {"align": "center", "bold": True, "font_size": "20px"}
+    #     )
+    #     txt = workbook.add_format({"font_size": "10px", "align": "center"})
+    #     sheet.merge_range("B2:I3", "EXCEL REPORT", head)
+    #     sheet.merge_range("A6:B6", "From Date:", cell_format)
+    #     sheet.merge_range("C6:D6", from_date, txt)
+    #     sheet.write("F6", "To Date:", cell_format)
+    #     sheet.merge_range("G6:H6", to_date, txt)
+    #     workbook.close()
+    #     output.seek(0)
+    #     response.stream.write(output.read())
+    #     output.close()
+
+
+# def generate_xlsx_report(self, workbook, data, po):
 #         sheet = workbook.add_worksheet()
 #         header = workbook.add_format(
 #             {"font_size": 16, "align": "center", "bg_color": "#D3D3D3", "bold": True}
