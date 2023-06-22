@@ -15,7 +15,7 @@
         "purchase",
     ],
     "data": [
-        "wizard/report_view.xml",
+        # "wizard/report_view.xml",
         "views/purchase_order.xml",
         "views/purchase_landed_cost.xml",
         "views/product.xml",

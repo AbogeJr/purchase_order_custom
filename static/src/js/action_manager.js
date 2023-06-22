@@ -7,7 +7,7 @@ import session from "web.session";
 
 registry.category("ir.actions.report handlers").add("xlsx", async (action) => {
   if (action.report_type === "xlsx") {
-    // framework.blockUI();
+    framework.blockUI();
     var def = $.Deferred();
     var dd = session.get_file({
       url: "/xlsx_reports",
@@ -15,6 +15,9 @@ registry.category("ir.actions.report handlers").add("xlsx", async (action) => {
       success: () => {
         console.log("\n\nSuccess!!");
         def.resolve.bind(def);
+      },
+      complete: () => {
+        console.log("\n\nCOMPLETE!!!\n\n");
         framework.unblockUI();
       },
       error: (error) => {
