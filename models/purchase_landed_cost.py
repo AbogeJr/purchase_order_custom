@@ -1,4 +1,4 @@
-from odoo import fields, models
+from odoo import fields, models, api
 
 
 class PurchaseLandedCost(models.Model):
@@ -16,49 +16,83 @@ class PurchaseLandedCost(models.Model):
         "Vendor Bill",
         copy=False,
         domain=[("move_type", "=", "in_invoice")],
+        readonly=True,
     )
-    picking_ids = fields.Many2many("stock.picking")
+    state = fields.Selection(
+        [("draft", "Draft"), ("billed", "Billed"), ("done", "Done")],
+        default="draft",
+    )
 
-    def create_landed_cost(self):
-        self.ensure_one()
-        if not self.vendor_bill_id:
-            self.vendor_bill_id = self.create_vendor_bill().id
-        landed_costs = self.env["stock.landed.cost"].create(
-            [
-                {
-                    "account_journal_id": self.expenses_journal.id,
-                    "cost_lines": [
-                        (
-                            0,
-                            0,
-                            {
-                                "name": "equal split",
-                                "split_method": "equal",
-                                "price_unit": self.price_unit,
-                                "product_id": self.landed_cost.id,
-                            },
-                        )
-                    ],
-                }
-            ]
-        )
-        landed_costs.compute_landed_cost()
-        landed_costs.button_validate()
+    @api.onchange("state")
+    def _onchange_state(self):
+        if self.state == "billed":
+            self.create_vendor_bill()
+        # elif self.state == "done":
+        #     self.create_landed_cost()
 
     def create_vendor_bill(self):
-        journal = self.env["account.invoice"]._default_journal().id
-        supplier_line = {
-            "product_id": self.product_id.id,
-            "name": self.product_id.name,
-            "type": "in_invoice",
-            "quantity": 1,
-            "account_id": journal,
-            "price_unit": self.purchase_id.price_unit,
-        }
-        record_line = {
-            "partner_id": self.user_id.id,
-            "invoice_line_ids": [(0, 0, supplier_line)],
-        }
-        record = self.env["account.invoice"].create(record_line)
-        self.env["account.invoice"].action_invoice_open()
-        return record
+        AccountMove = self.env["account.move"]
+        AccountMoveLine = self.env["account.move.line"]
+        for record in self:
+            # Create an empty invoice
+            invoice = AccountMove.create(
+                {
+                    "move_type": "in_invoice",
+                    "partner_id": record.vendor_id.id,  # Set the customer/partner for the invoice
+                    "invoice_date": fields.Date.today(),  # Set the invoice date
+                }
+            )
+            # Calculate invoice lines
+            quantity = record.quantity
+            price = record.price
+            taxes = record.taxes
+
+            # Create the first invoice line
+            line1 = AccountMoveLine.create(
+                {
+                    "name": "Product Info",  # Name of the invoice line
+                    "quantity": 1,  # Quantity of the item
+                    "move_id": invoice.id,  # Assign the invoice to the line
+                }
+            )
+
+            # Create the second invoice line
+            line2 = AccountMoveLine.create(
+                {
+                    "name": "Administrative Fees",  # Name of the invoice line
+                    "quantity": 1,  # Quantity of the item
+                    "move_id": invoice.id,  # Assign the invoice to the line
+                }
+            )
+
+            # Set the invoice lines on the invoice
+            invoice.write({"invoice_line_ids": [(4, line1.id), (4, line2.id)]})
+
+            # Set the created invoice on the property
+            record.vendor_bill_id = invoice.id
+
+    # def create_landed_cost(self):
+    #     self.ensure_one()
+    #     if not self.vendor_bill_id:
+    #         self.vendor_bill_id = self.create_vendor_bill().id
+    #     landed_costs = self.env["stock.landed.cost"].create(
+    #         [
+    #             {
+    #                 "account_journal_id": self.expenses_journal.id,
+    #                 "cost_lines": [
+    #                     (
+    #                         0,
+    #                         0,
+    #                         {
+    #                             "name": "equal split",
+    #                             "split_method": "equal",
+    #                             "price_unit": self.price_unit,
+    #                             "product_id": self.landed_cost.id,
+    #                         },
+    #                     )
+    #                 ],
+    #             }
+    #         ]
+    #     )
+    #     landed_costs.compute_landed_cost()
+    #     landed_costs.button_validate()

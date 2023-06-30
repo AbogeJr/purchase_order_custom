@@ -18,6 +18,7 @@
                 <field name="taxes"/>
                 <field name="price"/>
                 <field name="vendor_bill_id"/>
+                <button type="object" name="create_vendor_bill" icon="check"/>
             </tree>
         </field>
     </record>

@@ -14,6 +14,7 @@
         "product",
         "stock",
         "purchase",
+        "account",
     ],
     "data": [
         "views/purchase_order.xml",
