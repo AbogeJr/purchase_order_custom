@@ -40,59 +40,68 @@ class PurchaseLandedCost(models.Model):
                     "move_type": "in_invoice",
                     "partner_id": record.vendor_id.id,  # Set the customer/partner for the invoice
                     "invoice_date": fields.Date.today(),  # Set the invoice date
+                    "ref": record.purchase_id.name,  # Set the invoice reference
                 }
             )
             # Calculate invoice lines
             quantity = record.quantity
             price = record.price
             taxes = record.taxes
+            product = record.product_id
+            purchase = record.purchase_id
 
             # Create the first invoice line
             line1 = AccountMoveLine.create(
                 {
                     "name": "Product Info",  # Name of the invoice line
-                    "quantity": 1,  # Quantity of the item
-                    "move_id": invoice.id,  # Assign the invoice to the line
-                }
-            )
-
-            # Create the second invoice line
-            line2 = AccountMoveLine.create(
-                {
-                    "name": "Administrative Fees",  # Name of the invoice line
-                    "quantity": 1,  # Quantity of the item
+                    "product_id": product.id,
+                    "tax_ids": [(6, 0, taxes.ids)],
+                    "price_unit": price,
+                    "is_landed_costs_line": True,
+                    "purchase_order_id": purchase.id,
+                    "quantity": quantity,  # Quantity of the item
                     "move_id": invoice.id,  # Assign the invoice to the line
                 }
             )
 
             # Set the invoice lines on the invoice
-            invoice.write({"invoice_line_ids": [(4, line1.id), (4, line2.id)]})
+            invoice.write(
+                {
+                    "invoice_line_ids": [
+                        (4, line1.id),
+                    ]
+                }
+            )
+
+            # Post the invoice
+            invoice.state = "posted"
 
             # Set the created invoice on the property
             record.vendor_bill_id = invoice.id
 
-    # def create_landed_cost(self):
-    #     self.ensure_one()
-    #     if not self.vendor_bill_id:
-    #         self.vendor_bill_id = self.create_vendor_bill().id
-    #     landed_costs = self.env["stock.landed.cost"].create(
-    #         [
-    #             {
-    #                 "account_journal_id": self.expenses_journal.id,
-    #                 "cost_lines": [
-    #                     (
-    #                         0,
-    #                         0,
-    #                         {
-    #                             "name": "equal split",
-    #                             "split_method": "equal",
-    #                             "price_unit": self.price_unit,
-    #                             "product_id": self.landed_cost.id,
-    #                         },
-    #                     )
-    #                 ],
-    #             }
-    #         ]
-    #     )
-    #     landed_costs.compute_landed_cost()
-    #     landed_costs.button_validate()
+    def create_landed_cost(self):
+        LandedCost = self.env["stock.landed.cost"]
+        for record in self:
+            # Create an empty landed cost
+            if record.vendor_bill_id:
+                landed_cost = LandedCost.create(
+                    {
+                        "vendor_bill_id": record.vendor_bill_id.id,
+                        "account_journal_id": record.purchase_id.journal_id.id,
+                        "cost_lines": [
+                            (
+                                0,
+                                0,
+                                {
+                                    "product_id": record.product_id.id,
+                                    "name": record.product_id.name,
+                                    "split_method": "by_quantity",
+                                    "price_unit": record.price,
+                                    "account_id": record.product_id.property_account_expense_id.id,
+                                },
+                            )
+                        ],
+                    }
+                )
+                # Compute the landed cost
+                landed_cost.compute_landed_cost()
