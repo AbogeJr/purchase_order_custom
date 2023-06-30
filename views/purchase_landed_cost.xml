@@ -1,12 +1,23 @@
 <?xml version="1.0"?>
 <odoo>
+
+    <record model='ir.actions.act_window' id='action_list_purchase_landed_cost'>
+        <field name='name'>Purchase Landed Costs</field>
+        <field name='res_model'>purchase.landed.cost</field>
+        <field name='view_mode'>tree,form</field>
+    </record>
+    
     <record id="view_purchase_landed_cost_form" model="ir.ui.view">
         <field name="model">purchase.order</field>
         <field name="inherit_id" ref="purchase.purchase_order_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button class="oe-stat_button" icon="fa-money" type="action" name="%(action_list_purchase_landed_cost)d" >
+                    <field name="landed_costs" string=" Landed Costs" widget="statinfo"/>
+                </button>
+            </xpath>
             <notebook position="inside">
-                <page string="Landed Cost" groups="purchase.group_purchase_manager">
-                    <group string="landed costs table">
+                <page string="Landed Costs" groups="purchase.group_purchase_manager">
                         <div colspan="2">
                             <field name="landed_costs" string="">
                                 <tree editable="bottom">
@@ -15,12 +26,14 @@
                                     <field name="quantity"/>
                                     <field name="taxes"/>
                                     <field name="price"/>
+                                    <field name="vendor_bill_id"/>
                                 </tree>
                             </field>
                         </div>
-                    </group>
                 </page>
             </notebook>
         </field>
     </record>
+
+    
 </odoo>
