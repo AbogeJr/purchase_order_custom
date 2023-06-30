@@ -26,7 +26,6 @@ class PurchaseLandedCost(models.Model):
         landed_costs = self.env["stock.landed.cost"].create(
             [
                 {
-                    "picking_ids": [(6, 0, picking.ids)],
                     "account_journal_id": self.expenses_journal.id,
                     "cost_lines": [
                         (
@@ -35,13 +34,12 @@ class PurchaseLandedCost(models.Model):
                             {
                                 "name": "equal split",
                                 "split_method": "equal",
-                                "price_unit": 5.0,
+                                "price_unit": self.price_unit,
                                 "product_id": self.landed_cost.id,
                             },
                         )
                     ],
                 }
-                for picking in self.picking_ids
             ]
         )
         landed_costs.compute_landed_cost()

@@ -6,6 +6,21 @@
         <field name='res_model'>purchase.landed.cost</field>
         <field name='view_mode'>tree,form</field>
     </record>
+
+    <record model="ir.ui.view" id="view_purchase_landed_cost_tree">
+        <field name="name">purchase.landed.cost.tree</field>
+        <field name="model">purchase.landed.cost</field>
+        <field name="arch" type="xml">
+            <tree string="Purchase Landed Costs">
+                <field name="vendor_id"/>
+                <field name="product_id"/>
+                <field name="quantity"/>
+                <field name="taxes"/>
+                <field name="price"/>
+                <field name="vendor_bill_id"/>
+            </tree>
+        </field>
+    </record>
     
     <record id="view_purchase_landed_cost_form" model="ir.ui.view">
         <field name="model">purchase.order</field>
