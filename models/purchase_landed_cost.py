@@ -9,7 +9,14 @@ class PurchaseLandedCost(models.Model):
     product_id = fields.Many2one("product.product", string="Product")
     quantity = fields.Integer()
     price = fields.Float()
-    taxes = fields.Many2many("account.tax")
+    # taxes = fields.Many2many("account.tax")
+    taxes = fields.Many2many(
+        "account.tax",
+        "purchase_landed_cost",
+        "vendor_bill_id",
+        "vendor_id",
+        string="Taxes",
+    )
     purchase_id = fields.Many2one("purchase.order")
     vendor_bill_id = fields.Many2one(
         "account.move",
@@ -53,14 +60,14 @@ class PurchaseLandedCost(models.Model):
             # Create the first invoice line
             line1 = AccountMoveLine.create(
                 {
-                    "name": "Product Info",  # Name of the invoice line
+                    "name": product.name,
                     "product_id": product.id,
                     "tax_ids": [(6, 0, taxes.ids)],
                     "price_unit": price,
                     "is_landed_costs_line": True,
                     "purchase_order_id": purchase.id,
-                    "quantity": quantity,  # Quantity of the item
-                    "move_id": invoice.id,  # Assign the invoice to the line
+                    "quantity": quantity,
+                    "move_id": invoice.id,
                 }
             )
 
@@ -97,7 +104,6 @@ class PurchaseLandedCost(models.Model):
                                     "name": record.product_id.name,
                                     "split_method": "by_quantity",
                                     "price_unit": record.price,
-                                    "account_id": record.product_id.property_account_expense_id.id,
                                 },
                             )
                         ],
