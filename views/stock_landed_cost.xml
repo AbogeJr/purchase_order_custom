@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="view_purchase_order_form" model="ir.ui.view">
+        <field name="model">stock.landed.cost</field>
+        <field name="inherit_id" ref="stock_landed_costs.view_stock_landed_cost_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='final_cost']" position='after'>
+                <field name="cost_difference" />
+                <field name="price_difference" />
+                <field name="computed_price" />
+                <field name="new_price" />
+            </xpath>
+
+            <xpath expr="//group[@class='oe_subtotal_footer oe_right']/field[@name='currency_id']" position='after'>
+                <field name="currency_factor" />
+                <field name="landed_cost_factor" />
+                <field name="base_pricing_factor" />
+                <field name="pricing_preference" />
+            </xpath>
+
+            <xpath expr="//group[@class='oe_subtotal_footer oe_right']/field[@name='amount_total']" position='after'>
+                <button string="Adjust Costing" colspan="2" class="oe_right btn-secondary" name="adjust_costing" type="object" />
+                <button string="Revert Costing" colspan="2" class="oe_right btn-secondary" name="revert_costing" type="object" />
+            </xpath>
+
+
+        </field>
+    </record>
+
+
+</odoo>

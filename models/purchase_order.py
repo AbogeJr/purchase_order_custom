@@ -5,6 +5,7 @@ from dateutil.relativedelta import relativedelta
 from odoo import fields, models, api, _
 from odoo.tools import float_is_zero
 from odoo.tools import date_utils
+from odoo.exceptions import UserError
 import io
 import json
 
@@ -17,21 +18,21 @@ except ImportError:
 class PurchaseOrder(models.Model):
     _inherit = "purchase.order"
 
-    landed_cost_factor = fields.Float()
-    base_pricing_factor = fields.Float()
-    pricing_preference = fields.Selection(
-        [
-            ("strict", "Strict"),
-            ("high", "Prefer higher Price"),
-            ("low", "Prefer Lower Price"),
-        ]
-    )
-    costing_ids = fields.One2many("purchase.costing", "order_id")
-    cost_item_ids = fields.One2many("purchase.costing.item.lines", "order_id")
-    cost_items_amount_total = fields.Float(compute="_compute_cost_items_totals")
-    cost_base_amount = fields.Float(compute="_compute_cost_items_totals")
-    cost_base_amount_lcy = fields.Float(compute="_compute_cost_items_totals")
-    currency_factor = fields.Float(string="Currency Rate", default=1)
+    # landed_cost_factor = fields.Float()
+    # base_pricing_factor = fields.Float()
+    # pricing_preference = fields.Selection(
+    #     [
+    #         ("strict", "Strict"),
+    #         ("high", "Prefer higher Price"),
+    #         ("low", "Prefer Lower Price"),
+    #     ]
+    # )
+    # costing_ids = fields.One2many("purchase.costing", "order_id")
+    # cost_item_ids = fields.One2many("purchase.costing.item.lines", "order_id")
+    # cost_items_amount_total = fields.Float(compute="_compute_cost_items_totals")
+    # cost_base_amount = fields.Float(compute="_compute_cost_items_totals")
+    # cost_base_amount_lcy = fields.Float(compute="_compute_cost_items_totals")
+    # currency_factor = fields.Float(string="Currency Rate", default=1)
     landed_costs = fields.One2many("purchase.landed.cost", "purchase_id")
 
     def print_xlsx_report(self):
@@ -242,26 +243,77 @@ class PurchaseOrder(models.Model):
             1 + self.cost_items_amount_total / self.cost_base_amount_lcy
         )
 
+    def create_landed_cost(self):
+        print("\n\nCREATE LANDED COST\n\n")
+        for record in self:
+            if not record.landed_costs:
+                raise UserError("No landed cost to create.")
 
-class PurchaseCosting(models.Model):
-    _name = "purchase.costing"
+            landed_costs_per_vendor = {}
 
-    order_id = fields.Many2one("purchase.order")
-    product_id = fields.Many2one("product.product", string="Product", readonly=True)
-    old_cost = fields.Float(string="Old Cost", readonly=True)
-    new_cost = fields.Float(string="New Cost", readonly=True)
-    old_price = fields.Float(string="Old Price", readonly=True)
-    computed_price = fields.Float(string="Computed Price", readonly=True)
-    new_price = fields.Float(string="New Price")
-    old_margin = fields.Float(string="Old Margin", readonly=True)
-    new_margin = fields.Float(string="New Margin", readonly=True)
-    cost_difference = fields.Float(string="Cost Difference", readonly=True)
-    price_difference = fields.Float(string="Price Difference", readonly=True)
+            for line in record.landed_costs:
+                if line.vendor_id.id not in landed_costs_per_vendor:
+                    landed_costs_per_vendor[line.vendor_id.id] = []
+                landed_costs_per_vendor[line.vendor_id.id].append(line)
 
-    @api.onchange("new_price")
-    def _recompute_price_and_margin(self):
-        self.new_margin = self.new_price - self.new_cost
-        self.price_difference = self.new_price - self.old_price
+            print(landed_costs_per_vendor)
+            # ceate vendor bill for everyb landed cost per vendor
+            AccountMove = self.env["account.move"]
+            AccountMoveLine = self.env["account.move.line"]
+
+            for vendor_id, landed_costs in landed_costs_per_vendor.items():
+                print(vendor_id, landed_costs)
+                invoice = AccountMove.create(
+                    {
+                        "move_type": "in_invoice",
+                        "partner_id": vendor_id,  # Set the customer/partner for the invoice
+                        "invoice_date": record.date_approve,  # Set the invoice date
+                        "ref": record.name,  # Set the invoice reference
+                    }
+                )
+
+                for item in landed_costs:
+                    # Create the first invoice line
+                    line = AccountMoveLine.create(
+                        {
+                            "name": item.name,
+                            "product_id": item.product_id.id,
+                            "tax_ids": [(6, 0, item.product_id.taxes_id.ids)],
+                            "price_unit": item.product_id.list_price,
+                            "is_landed_costs_line": True,
+                            "purchase_order_id": record.id,
+                            "move_id": invoice.id,
+                        }
+                    )
+                    # Set the invoice lines on the invoice
+                    invoice.write(
+                        {
+                            "invoice_line_ids": [
+                                (4, line.id),
+                            ]
+                        }
+                    )
+
+
+# class PurchaseCosting(models.Model):
+#     _name = "purchase.costing"
+
+#     order_id = fields.Many2one("purchase.order")
+#     product_id = fields.Many2one("product.product", string="Product", readonly=True)
+#     old_cost = fields.Float(string="Old Cost", readonly=True)
+#     new_cost = fields.Float(string="New Cost", readonly=True)
+#     old_price = fields.Float(string="Old Price", readonly=True)
+#     computed_price = fields.Float(string="Computed Price", readonly=True)
+#     new_price = fields.Float(string="New Price")
+#     old_margin = fields.Float(string="Old Margin", readonly=True)
+#     new_margin = fields.Float(string="New Margin", readonly=True)
+#     cost_difference = fields.Float(string="Cost Difference", readonly=True)
+#     price_difference = fields.Float(string="Price Difference", readonly=True)
+
+#     @api.onchange("new_price")
+#     def _recompute_price_and_margin(self):
+#         self.new_margin = self.new_price - self.new_cost
+#         self.price_difference = self.new_price - self.old_price
 
 
 class ProductSupplierInfo(models.Model):
@@ -272,15 +324,15 @@ class ProductSupplierInfo(models.Model):
     )
 
 
-class PurchaseCostingItem(models.Model):
-    _name = "purchase.costing.item"
+# class PurchaseCostingItem(models.Model):
+# _name = "purchase.costing.item"
 
-    name = fields.Char()
+# name = fields.Char()
 
 
-class PurchaseCostingItemLines(models.Model):
-    _name = "purchase.costing.item.lines"
+# class PurchaseCostingItemLines(models.Model):
+#     _name = "purchase.costing.item.lines"
 
-    costing_item_id = fields.Many2one("purchase.costing.item", string="Cost Item")
-    amount = fields.Float()
-    order_id = fields.Many2one("purchase.order")
+#     costing_item_id = fields.Many2one("purchase.costing.item", string="Cost Item")
+#     amount = fields.Float()
+#     order_id = fields.Many2one("purchase.order")

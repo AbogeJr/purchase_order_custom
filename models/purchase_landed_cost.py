@@ -5,37 +5,45 @@ class PurchaseLandedCost(models.Model):
     _name = "purchase.landed.cost"
     _description = "Relation for Purchase Landed Costs"
 
-    vendor_id = fields.Many2one("res.partner", string="Vendor")
-    product_id = fields.Many2one("product.product", string="Product")
-    quantity = fields.Integer()
-    price = fields.Float()
-    # taxes = fields.Many2many("account.tax")
-    taxes = fields.Many2many(
-        "account.tax",
-        "purchase_landed_cost",
-        "vendor_bill_id",
-        "vendor_id",
-        string="Taxes",
-    )
-    purchase_id = fields.Many2one("purchase.order")
-    vendor_bill_id = fields.Many2one(
-        "account.move",
-        "Vendor Bill",
-        copy=False,
-        domain=[("move_type", "=", "in_invoice")],
-        readonly=True,
-    )
-    state = fields.Selection(
-        [("draft", "Draft"), ("billed", "Billed"), ("done", "Done")],
-        default="draft",
-    )
+    SPLIT_METHOD = [
+        ("equal", "Equal"),
+        ("by_quantity", "By Quantity"),
+        ("by_current_cost_price", "By Current Cost"),
+        ("by_weight", "By Weight"),
+        ("by_volume", "By Volume"),
+    ]
 
-    @api.onchange("state")
-    def _onchange_state(self):
-        if self.state == "billed":
-            self.create_vendor_bill()
-        # elif self.state == "done":
-        #     self.create_landed_cost()
+    name = fields.Char("Description")
+    vendor_id = fields.Many2one("res.partner", string="Vendor")
+    product_id = fields.Many2one(
+        "product.product", string="Product", domain=[("landed_cost_ok", "=", True)]
+    )
+    price_unit = fields.Monetary("Cost", required=True)
+    split_method = fields.Selection(
+        SPLIT_METHOD,
+        string="Split Method",
+        required=True,
+    )
+    account_id = fields.Many2one(
+        "account.account", "Account", domain=[("deprecated", "=", False)]
+    )
+    date = fields.Date(
+        "Date",
+        default=fields.Date.context_today,
+        copy=False,
+        required=True,
+        states={"done": [("readonly", True)]},
+        tracking=True,
+    )
+    purchase_id = fields.Many2one(
+        "purchase.order",
+        "Purchase Order",
+        domain=[("state", "=", "purchase")],
+        required=True,
+    )
+    currency_id = fields.Many2one(
+        "res.currency", default=lambda self: self.env.company.currency_id, readonly=True
+    )
 
     def create_vendor_bill(self):
         AccountMove = self.env["account.move"]
@@ -46,12 +54,12 @@ class PurchaseLandedCost(models.Model):
                 {
                     "move_type": "in_invoice",
                     "partner_id": record.vendor_id.id,  # Set the customer/partner for the invoice
-                    "invoice_date": fields.Date.today(),  # Set the invoice date
+                    # "invoice_date": record.date_approve,  # Set the invoice date
                     "ref": record.purchase_id.name,  # Set the invoice reference
                 }
             )
             # Calculate invoice lines
-            quantity = record.quantity
+            # quantity = record.quantity
             price = record.price
             taxes = record.taxes
             product = record.product_id
@@ -66,7 +74,7 @@ class PurchaseLandedCost(models.Model):
                     "price_unit": price,
                     "is_landed_costs_line": True,
                     "purchase_order_id": purchase.id,
-                    "quantity": quantity,
+                    # "quantity": quantity,
                     "move_id": invoice.id,
                 }
             )
@@ -102,7 +110,7 @@ class PurchaseLandedCost(models.Model):
                                 {
                                     "product_id": record.product_id.id,
                                     "name": record.product_id.name,
-                                    "split_method": "by_quantity",
+                                    "split_method": "equal",
                                     "price_unit": record.price,
                                 },
                             )
