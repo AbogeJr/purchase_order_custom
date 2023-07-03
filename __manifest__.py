@@ -10,7 +10,6 @@
     "category": "Purchases",
     "license": "AGPL-3",
     "depends": [
-        # "stock",
         "web",
         "product",
         "purchase",
