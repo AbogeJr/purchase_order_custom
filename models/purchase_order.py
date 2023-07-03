@@ -278,9 +278,32 @@ class PurchaseOrder(models.Model):
                             ]
                         }
                     )
-                invoice.button_create_landed_costs()
+                    # Create Landed Costs
+                    landed_cost = self.env["stock.landed.cost"].create(
+                        {
+                            "vendor_bill_id": invoice.id,
+                            "picking_ids": [(6, 0, record.picking_ids.ids)],
+                            "cost_lines": [
+                                (
+                                    0,
+                                    0,
+                                    {
+                                        "product_id": item.product_id.id,
+                                        "name": item.product_id.name,
+                                        "account_id": item.account_id.id,
+                                        "price_unit": item.price_unit,
+                                        "split_method": item.split_method or "equal",
+                                    },
+                                )
+                            ],
+                        }
+                    )
+
                 print("\n\n====vendor bill created====")
                 print(invoice.ref)
+                print(invoice.name)
+            print("=====PICKING ID=====")
+            print(record.picking_ids.name)
         return invoice
 
 
