@@ -3,8 +3,7 @@ import time
 import datetime
 from dateutil.relativedelta import relativedelta
 from odoo import fields, models, api, _
-from odoo.tools import float_is_zero
-from odoo.tools import date_utils
+from odoo.tools import date_utils, groupby, float_is_zero
 from odoo.exceptions import UserError
 import io
 import json
@@ -18,21 +17,6 @@ except ImportError:
 class PurchaseOrder(models.Model):
     _inherit = "purchase.order"
 
-    # landed_cost_factor = fields.Float()
-    # base_pricing_factor = fields.Float()
-    # pricing_preference = fields.Selection(
-    #     [
-    #         ("strict", "Strict"),
-    #         ("high", "Prefer higher Price"),
-    #         ("low", "Prefer Lower Price"),
-    #     ]
-    # )
-    # costing_ids = fields.One2many("purchase.costing", "order_id")
-    # cost_item_ids = fields.One2many("purchase.costing.item.lines", "order_id")
-    # cost_items_amount_total = fields.Float(compute="_compute_cost_items_totals")
-    # cost_base_amount = fields.Float(compute="_compute_cost_items_totals")
-    # cost_base_amount_lcy = fields.Float(compute="_compute_cost_items_totals")
-    # currency_factor = fields.Float(string="Currency Rate", default=1)
     landed_costs = fields.One2many("purchase.landed.cost", "purchase_id")
 
     def print_xlsx_report(self):
@@ -245,6 +229,7 @@ class PurchaseOrder(models.Model):
 
     def create_landed_cost(self):
         print("\n\nCREATE LANDED COST\n\n")
+
         for record in self:
             if not record.landed_costs:
                 raise UserError("No landed cost to create.")
@@ -293,6 +278,10 @@ class PurchaseOrder(models.Model):
                             ]
                         }
                     )
+                invoice.button_create_landed_costs()
+                print("\n\n====vendor bill created====")
+                print(invoice.ref)
+        return invoice
 
 
 # class PurchaseCosting(models.Model):
