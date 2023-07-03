@@ -10,18 +10,18 @@
     "category": "Purchases",
     "license": "AGPL-3",
     "depends": [
+        "stock",
         "web",
         "product",
         "purchase",
         "account",
-        "stock",
         "stock_landed_costs",
     ],
     "data": [
-        "views/purchase_order.xml",
         "views/purchase_landed_cost.xml",
         "views/stock_landed_cost.xml",
         "views/product.xml",
+        "views/purchase_order.xml",
         "security/ir.model.access.csv",
     ],
     "assets": {

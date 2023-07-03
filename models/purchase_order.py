@@ -185,17 +185,17 @@ class PurchaseOrder(models.Model):
 
         self.costing_ids = lines
 
-    def adjust_costing(self):
-        for record in self:
-            for line in record.costing_ids:
-                line.product_id.lst_price = line.new_price
-                line.product_id.standard_price = line.new_cost
+    # def adjust_costing(self):
+    #     for record in self:
+    #         for line in record.costing_ids:
+    #             line.product_id.lst_price = line.new_price
+    #             line.product_id.standard_price = line.new_cost
 
-    def revert_costing(self):
-        for record in self:
-            for line in record.costing_ids:
-                line.product_id.lst_price = line.old_price
-                line.product_id.standard_price = line.old_cost
+    # def revert_costing(self):
+    #     for record in self:
+    #         for line in record.costing_ids:
+    #             line.product_id.lst_price = line.old_price
+    #             line.product_id.standard_price = line.old_cost
 
     def update_supplier_pricelist(self):
         for product in self.order_line:

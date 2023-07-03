@@ -16,10 +16,16 @@ class InheritLandedCost(models.Model):
     )
 
     def adjust_costing(self):
-        pass
+        for record in self:
+            for valuation_line in record.valuation_adjustment_lines:
+                valuation_line.product_id.lst_price = valuation_line.new_price
+                valuation_line.product_id.standard_price = valuation_line.new_cost
 
     def revert_costing(self):
-        pass
+        for record in self:
+            for valuation_line in record.valuation_adjustment_lines:
+                valuation_line.product_id.lst_price = valuation_line.old_price
+                valuation_line.product_id.standard_price = valuation_line.former_cost
 
 
 class InheritStockValuationAjdjustmentLines(models.Model):
@@ -29,3 +35,5 @@ class InheritStockValuationAjdjustmentLines(models.Model):
     price_difference = fields.Float(string="Price Difference", readonly=True)
     computed_price = fields.Float(string="Computed Price", readonly=True)
     new_price = fields.Float(string="New Price")
+    old_price = fields.Float(string="New Price")
+    new_cost = fields.Float(string="New Cost")
