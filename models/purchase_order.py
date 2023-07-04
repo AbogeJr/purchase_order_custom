@@ -233,6 +233,8 @@ class PurchaseOrder(models.Model):
         for record in self:
             if not record.landed_costs:
                 raise UserError("No landed cost to create.")
+            if record.picking_ids:
+                record.picking_ids.button_validate()
 
             landed_costs_per_vendor = {}
 
@@ -303,6 +305,7 @@ class PurchaseOrder(models.Model):
                 print(invoice.name)
             print("=====PICKING ID=====")
             print(record.picking_ids.name)
+            print(record.picking_ids.purchase_id)
         return invoice
 
 
