@@ -256,7 +256,6 @@ class PurchaseOrder(models.Model):
                         "ref": record.name,  # Set the invoice reference
                     }
                 )
-
                 for item in landed_costs:
                     # Create the first invoice line
                     line = AccountMoveLine.create(
@@ -268,14 +267,6 @@ class PurchaseOrder(models.Model):
                             "is_landed_costs_line": True,
                             "purchase_order_id": record.id,
                             "move_id": invoice.id,
-                        }
-                    )
-                    # Set the invoice lines on the invoice
-                    invoice.write(
-                        {
-                            "invoice_line_ids": [
-                                (4, line.id),
-                            ]
                         }
                     )
                     # Create Landed Costs
@@ -298,6 +289,14 @@ class PurchaseOrder(models.Model):
                             ],
                         }
                     )
+                # Set the invoice lines on the invoice
+                invoice.write(
+                    {
+                        "invoice_line_ids": [
+                            (4, line.id),
+                        ]
+                    }
+                )
 
                 print("\n\n====vendor bill created====")
                 print(invoice.ref)
