@@ -33,7 +33,6 @@ class PurchaseLandedCost(models.Model):
         copy=False,
         required=True,
         states={"done": [("readonly", True)]},
-        tracking=True,
     )
     purchase_id = fields.Many2one(
         "purchase.order",
@@ -43,4 +42,14 @@ class PurchaseLandedCost(models.Model):
     )
     currency_id = fields.Many2one(
         "res.currency", default=lambda self: self.env.company.currency_id, readonly=True
+    )
+    state = fields.Selection(
+        [
+            ("draft", "Draft"),
+            ("done", "Done"),
+            ("cancel", "Cancelled"),
+        ],
+        string="Status",
+        default="draft",
+        copy=False,
     )
