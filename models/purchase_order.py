@@ -132,6 +132,7 @@ class PurchaseOrder(models.Model):
 
     def create_landed_cost(self):
         print("\n\nCREATE LANDED COST\n\n")
+        invoice = False
 
         for record in self:
             if not record.landed_costs:
@@ -140,6 +141,8 @@ class PurchaseOrder(models.Model):
             landed_costs_per_vendor = {}
 
             for line in record.landed_costs:
+                if line.state == "done" or line.state == "cancel":
+                    continue
                 if line.vendor_id.id not in landed_costs_per_vendor:
                     landed_costs_per_vendor[line.vendor_id.id] = []
                 landed_costs_per_vendor[line.vendor_id.id].append(line)
